@@ -17,7 +17,7 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadURL("http://localhost:3000");
+  mainWindow.loadURL("https://zynkora-ebon.vercel.app/login");
 
   mainWindow.on("closed", () => {
     mainWindow = null;

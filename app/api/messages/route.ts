@@ -1,0 +1,20 @@
+import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+
+export async function GET() {
+  try {
+    const filePath = path.join(process.cwd(), "app/data/messages.json");
+    const messages = JSON.parse(fs.readFileSync(filePath, "utf8"));
+
+    return NextResponse.json({
+      success: true,
+      messages,
+    });
+  } catch (error: any) {
+    return NextResponse.json({
+      success: false,
+      error: error.message,
+    });
+  }
+}

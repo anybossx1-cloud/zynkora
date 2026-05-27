@@ -1,66 +1,57 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+);
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    console.log(
-      "INBOUND TELNYX:",
-      JSON.stringify(body, null, 2)
-    );
+    console.log("INBOUND TELNYX:", JSON.stringify(body, null, 2));
 
     const data = body.data?.payload;
 
-    const from =
-      data?.from?.phone_number || "unknown";
-
-    const to =
-      data?.to?.[0]?.phone_number || "unknown";
-
+    const from = data?.from?.phone_number || "unknown";
+    const to = data?.to?.[0]?.phone_number || "unknown";
     const text = data?.text || "";
 
     let mediaUrl = null;
 
-    // MMS / FOTOS
     if (data?.media && data.media.length > 0) {
       mediaUrl = data.media[0].url || null;
     }
 
-    if (
-      data?.media_urls &&
-      data.media_urls.length > 0
-    ) {
-      mediaUrl =
-        data.media_urls[0] || mediaUrl;
+    if (data?.media_urls && data.media_urls.length > 0) {
+      mediaUrl = data.media_urls[0] || mediaUrl;
     }
 
-    const filePath = path.join(
-      process.cwd(),
-      "app/data/messages.json"
-    );
+    const messageId = data?.id || `${Date.now()}`;
 
-    const mensajesActuales = JSON.parse(
-      fs.readFileSync(filePath, "utf8")
-    );
+    const { error } = await supabase.from("messages").insert([
+      {
+        message_id: messageId,
+        phone: from,
+        from_number: from,
+        to_number: to,
+        message: text,
+        media_url: mediaUrl,
+        direction: "inbound",
+        status: "received",
+        delivery_status: "received",
+      },
+    ]);
 
-    mensajesActuales.push({
-      id: data?.id || "",
-      messageId: data?.id || "",
-      from,
-      to,
-      message: text,
-      mediaUrl,
-      direction: "inbound",
-      read: false,
-      createdAt: new Date().toISOString(),
-    });
+    if (error) {
+      console.log("SUPABASE INBOUND ERROR:", error);
 
-    fs.writeFileSync(
-      filePath,
-      JSON.stringify(mensajesActuales, null, 2)
-    );
+      return NextResponse.json({
+        success: false,
+        error: error.message,
+      });
+    }
 
     return NextResponse.json({
       success: true,

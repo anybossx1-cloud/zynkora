@@ -1,38 +1,10 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
-const messagesPath = path.join(process.cwd(), "app/data/messages.json");
-const numbersPath = path.join(process.cwd(), "app/data/numbers.json");
-const assignmentsPath = path.join(
-  process.cwd(),
-  "app/data/numberAssignments.json"
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
 );
-
-function leerJSON(filePath: string, fallback: any) {
-  try {
-    if (!fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, JSON.stringify(fallback, null, 2));
-      return fallback;
-    }
-
-    const contenido = fs.readFileSync(filePath, "utf8");
-
-    if (!contenido.trim()) {
-      fs.writeFileSync(filePath, JSON.stringify(fallback, null, 2));
-      return fallback;
-    }
-
-    return JSON.parse(contenido);
-  } catch (error) {
-    console.log("ERROR LEYENDO JSON:", filePath, error);
-    return fallback;
-  }
-}
-
-function guardarJSON(filePath: string, data: any) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
 
 function normalizarNumero(numero: string) {
   if (!numero) return "";
@@ -40,95 +12,60 @@ function normalizarNumero(numero: string) {
   const limpio = numero.replace(/[^\d+]/g, "");
 
   if (limpio.startsWith("+")) return limpio;
-
   if (limpio.length === 10) return `+1${limpio}`;
-
-  if (limpio.length === 11 && limpio.startsWith("1")) {
-    return `+${limpio}`;
-  }
+  if (limpio.length === 11 && limpio.startsWith("1")) return `+${limpio}`;
 
   return limpio;
 }
 
-function elegirNumeroParaContacto(contactoOriginal: string) {
+async function elegirNumeroParaContacto(contactoOriginal: string) {
   const contact = normalizarNumero(contactoOriginal);
 
-  const numbers: string[] = leerJSON(numbersPath, []);
-  const assignments: any[] = leerJSON(assignmentsPath, []);
+  const { data: asignado } = await supabase
+    .from("number_assignments")
+    .select("*")
+    .eq("contact", contact)
+    .maybeSingle();
 
-  if (!numbers.length) {
+  if (asignado?.assigned_number) {
+    return { contact, assignedNumber: asignado.assigned_number };
+  }
+
+  const { data: numbers } = await supabase
+    .from("numbers")
+    .select("*")
+    .eq("status", "active");
+
+  if (!numbers || numbers.length === 0) {
     const fallback = process.env.TELNYX_FROM_NUMBER;
-
-    if (!fallback) {
-      throw new Error(
-        "No hay números en app/data/numbers.json y TELNYX_FROM_NUMBER no existe."
-      );
-    }
-
-    return {
-      contact,
-      assignedNumber: fallback,
-    };
+    if (!fallback) throw new Error("No hay números activos.");
+    return { contact, assignedNumber: fallback };
   }
 
-  const yaAsignado = assignments.find(
-    (item) => item.contact === contact
-  );
-
-  if (yaAsignado?.assignedNumber) {
-    return {
-      contact,
-      assignedNumber: yaAsignado.assignedNumber,
-    };
-  }
+  const { data: assignments } = await supabase
+    .from("number_assignments")
+    .select("*");
 
   const usage: Record<string, number> = {};
 
-  numbers.forEach((number) => {
-    usage[number] = assignments.filter(
-      (item) => item.assignedNumber === number
+  numbers.forEach((n: any) => {
+    usage[n.phone] = (assignments || []).filter(
+      (a: any) => a.assigned_number === n.phone
     ).length;
   });
 
   const assignedNumber = [...numbers].sort(
-    (a, b) => usage[a] - usage[b]
-  )[0];
+    (a: any, b: any) => usage[a.phone] - usage[b.phone]
+  )[0].phone;
 
-  assignments.push({
-    contact,
-    assignedNumber,
-    createdAt: new Date().toISOString(),
-  });
+  await supabase.from("number_assignments").insert([
+    {
+      contact,
+      assigned_number: assignedNumber,
+    },
+  ]);
 
-  guardarJSON(assignmentsPath, assignments);
-
-  return {
-    contact,
-    assignedNumber,
-  };
-}
-
-function actualizarStatus(messageId: string, status: string) {
-  try {
-    const mensajes = leerJSON(messagesPath, []);
-
-    const actualizados = mensajes.map((msg: any) => {
-      if (msg.messageId === messageId || msg.id === messageId) {
-        return {
-          ...msg,
-          status,
-          deliveryStatus: status,
-          statusUpdatedAt: new Date().toISOString(),
-        };
-      }
-
-      return msg;
-    });
-
-    guardarJSON(messagesPath, actualizados);
-  } catch (error) {
-    console.log("ERROR ACTUALIZANDO STATUS:", error);
-  }
+  return { contact, assignedNumber };
 }
 
 export async function POST(req: Request) {
@@ -136,7 +73,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const to = normalizarNumero(body.to);
-    const { assignedNumber } = elegirNumeroParaContacto(to);
+    const { assignedNumber } = await elegirNumeroParaContacto(to);
 
     const payload: any = {
       from: assignedNumber,
@@ -146,10 +83,7 @@ export async function POST(req: Request) {
 
     if (body.mediaUrl) {
       payload.media_urls = [body.mediaUrl];
-      console.log("MMS URL ENVIADA A TELNYX:", body.mediaUrl);
     }
-
-    console.log("PAYLOAD TELNYX:", payload);
 
     const response = await fetch("https://api.telnyx.com/v2/messages", {
       method: "POST",
@@ -162,44 +96,33 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
-    console.log("TELNYX RESPONSE:", JSON.stringify(data, null, 2));
-
     if (!response.ok) {
-      console.log("TELNYX ERROR:", JSON.stringify(data, null, 2));
-
-      return NextResponse.json({
-        success: false,
-        error: data,
-      });
+      return NextResponse.json({ success: false, error: data });
     }
 
     const messageId = data?.data?.id || `${Date.now()}`;
 
-    const mensajesActuales = leerJSON(messagesPath, []);
+    const { error: insertError } = await supabase.from("messages").insert([
+      {
+        message_id: messageId,
+        phone: to,
+        from_number: assignedNumber,
+        to_number: to,
+        message: body.message || "",
+        media_url: body.mediaUrl || null,
+        direction: "outbound",
+        status: "delivered",
+        delivery_status: "delivered",
+        sender_number: assignedNumber,
+      },
+    ]);
 
-    mensajesActuales.push({
-      id: messageId,
-      messageId,
-      from: assignedNumber,
-      to,
-      message: body.message || "",
-      mediaUrl: body.mediaUrl || null,
-      direction: "outbound",
-      status: "sending",
-      deliveryStatus: "sending",
-      senderNumber: assignedNumber,
-      createdAt: new Date().toISOString(),
-    });
-
-    guardarJSON(messagesPath, mensajesActuales);
-
-    setTimeout(() => {
-      actualizarStatus(messageId, "sent");
-    }, 2000);
-
-    setTimeout(() => {
-      actualizarStatus(messageId, "delivered");
-    }, 6000);
+    if (insertError) {
+      return NextResponse.json({
+        success: false,
+        error: insertError.message,
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -209,8 +132,6 @@ export async function POST(req: Request) {
       to,
     });
   } catch (error: any) {
-    console.log("SERVER ERROR:", error);
-
     return NextResponse.json({
       success: false,
       error: error.message,

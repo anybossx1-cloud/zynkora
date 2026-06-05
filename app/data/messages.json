@@ -979,7 +979,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T01:56:59.151Z"
   },
   {
@@ -990,7 +990,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T01:56:59.263Z"
   },
   {
@@ -1043,7 +1043,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:41:12.960Z",
     "status": "delivered",
     "deliveryStatus": "delivered",
@@ -1057,7 +1057,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:41:12.971Z",
     "status": "delivered",
     "deliveryStatus": "delivered",
@@ -1071,7 +1071,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:41:22.313Z"
   },
   {
@@ -1082,7 +1082,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:41:22.598Z"
   },
   {
@@ -1107,7 +1107,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:41:32.200Z"
   },
   {
@@ -1118,7 +1118,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:41:32.880Z"
   },
   {
@@ -1143,7 +1143,7 @@
     "message": "+17196548039",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:41:42.269Z"
   },
   {
@@ -1154,7 +1154,7 @@
     "message": "+17196548039",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:41:43.085Z"
   },
   {
@@ -1165,7 +1165,7 @@
     "message": "hey como estas?",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:41:52.741Z"
   },
   {
@@ -1176,7 +1176,7 @@
     "message": "hey como estas?",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:41:53.126Z"
   },
   {
@@ -1201,7 +1201,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:47:19.189Z",
     "status": "delivered",
     "deliveryStatus": "delivered",
@@ -1215,7 +1215,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:47:19.214Z",
     "status": "delivered",
     "deliveryStatus": "delivered",
@@ -1243,7 +1243,7 @@
     "message": "como vas?",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:47:29.012Z",
     "status": "delivered",
     "deliveryStatus": "delivered",
@@ -1257,7 +1257,7 @@
     "message": "como vas?",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T02:47:29.028Z",
     "status": "delivered",
     "deliveryStatus": "delivered",
@@ -1271,7 +1271,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T03:00:12.873Z"
   },
   {
@@ -1282,7 +1282,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T03:00:13.449Z"
   },
   {
@@ -1293,7 +1293,7 @@
     "message": "hey klk activo",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T03:00:48.162Z"
   },
   {
@@ -1304,7 +1304,7 @@
     "message": "hey klk activo",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T03:00:48.889Z"
   },
   {
@@ -1315,7 +1315,7 @@
     "message": "activoooooooooooooooooo",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T03:01:35.391Z"
   },
   {
@@ -1326,7 +1326,7 @@
     "message": "activoooooooooooooooooo",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T03:01:36.129Z"
   },
   {
@@ -1337,7 +1337,7 @@
     "message": "ugugouuguuu",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T03:11:19.264Z"
   },
   {
@@ -1348,7 +1348,7 @@
     "message": "ugugouuguuu",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T03:11:19.285Z"
   },
   {
@@ -1359,7 +1359,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T14:39:57.585Z"
   },
   {
@@ -1370,7 +1370,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T14:39:57.630Z"
   },
   {
@@ -1381,7 +1381,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T14:54:01.889Z"
   },
   {
@@ -1392,7 +1392,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T14:54:02.457Z"
   },
   {
@@ -1425,7 +1425,7 @@
     "message": "recibiste mi mensaje...",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T14:54:34.346Z"
   },
   {
@@ -1436,7 +1436,7 @@
     "message": "recibiste mi mensaje...",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T14:54:34.439Z"
   },
   {
@@ -1458,7 +1458,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T14:55:33.656Z"
   },
   {
@@ -1469,7 +1469,7 @@
     "message": "hey",
     "mediaUrl": null,
     "direction": "inbound",
-    "read": false,
+    "read": true,
     "createdAt": "2026-05-27T14:55:34.436Z"
   },
   {

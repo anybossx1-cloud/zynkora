@@ -99,7 +99,7 @@ export async function POST(req: Request) {
     });
 
     const to = normalizarNumero(body.to);
-    const { assignedNumber } = await elegirNumeroParaContacto(to);
+    const assignedNumber = process.env.TELNYX_FROM_NUMBER as string;
 
     console.log("SEND NUMBERS:", {
       from: assignedNumber,

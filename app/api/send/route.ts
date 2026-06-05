@@ -21,30 +21,42 @@ function normalizarNumero(numero: string) {
 async function elegirNumeroParaContacto(contactoOriginal: string) {
   const contact = normalizarNumero(contactoOriginal);
 
-  const { data: asignado } = await supabase
+  const { data: asignado, error: asignadoError } = await supabase
     .from("number_assignments")
     .select("*")
     .eq("contact", contact)
     .maybeSingle();
 
+  if (asignadoError) {
+    console.log("SUPABASE ASSIGNMENT ERROR:", asignadoError);
+  }
+
   if (asignado?.assigned_number) {
     return { contact, assignedNumber: asignado.assigned_number };
   }
 
-  const { data: numbers } = await supabase
+  const { data: numbers, error: numbersError } = await supabase
     .from("numbers")
     .select("*")
     .eq("status", "active");
 
+  if (numbersError) {
+    console.log("SUPABASE NUMBERS ERROR:", numbersError);
+  }
+
   if (!numbers || numbers.length === 0) {
     const fallback = process.env.TELNYX_FROM_NUMBER;
-    if (!fallback) throw new Error("No hay números activos.");
+    if (!fallback) throw new Error("No hay números activos y no existe TELNYX_FROM_NUMBER.");
     return { contact, assignedNumber: fallback };
   }
 
-  const { data: assignments } = await supabase
+  const { data: assignments, error: assignmentsError } = await supabase
     .from("number_assignments")
     .select("*");
+
+  if (assignmentsError) {
+    console.log("SUPABASE ASSIGNMENTS LIST ERROR:", assignmentsError);
+  }
 
   const usage: Record<string, number> = {};
 
@@ -58,12 +70,18 @@ async function elegirNumeroParaContacto(contactoOriginal: string) {
     (a: any, b: any) => usage[a.phone] - usage[b.phone]
   )[0].phone;
 
-  await supabase.from("number_assignments").insert([
-    {
-      contact,
-      assigned_number: assignedNumber,
-    },
-  ]);
+  const { error: insertAssignmentError } = await supabase
+    .from("number_assignments")
+    .insert([
+      {
+        contact,
+        assigned_number: assignedNumber,
+      },
+    ]);
+
+  if (insertAssignmentError) {
+    console.log("SUPABASE INSERT ASSIGNMENT ERROR:", insertAssignmentError);
+  }
 
   return { contact, assignedNumber };
 }
@@ -72,8 +90,21 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
+    console.log("SEND BODY:", body);
+    console.log("ENV CHECK:", {
+      hasTelnyx: !!process.env.TELNYX_API_KEY,
+      hasFrom: !!process.env.TELNYX_FROM_NUMBER,
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    });
+
     const to = normalizarNumero(body.to);
     const { assignedNumber } = await elegirNumeroParaContacto(to);
+
+    console.log("SEND NUMBERS:", {
+      from: assignedNumber,
+      to,
+    });
 
     const payload: any = {
       from: assignedNumber,
@@ -84,6 +115,13 @@ export async function POST(req: Request) {
     if (body.mediaUrl) {
       payload.media_urls = [body.mediaUrl];
     }
+
+    console.log("TELNYX PAYLOAD:", {
+      from: payload.from,
+      to: payload.to,
+      hasText: !!payload.text,
+      hasMedia: !!payload.media_urls,
+    });
 
     const response = await fetch("https://api.telnyx.com/v2/messages", {
       method: "POST",
@@ -96,8 +134,18 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
+    console.log("TELNYX RESPONSE:", {
+      ok: response.ok,
+      status: response.status,
+      data,
+    });
+
     if (!response.ok) {
-      return NextResponse.json({ success: false, error: data });
+      return NextResponse.json({
+        success: false,
+        error: data,
+        telnyxStatus: response.status,
+      });
     }
 
     const messageId = data?.data?.id || `${Date.now()}`;
@@ -118,6 +166,8 @@ export async function POST(req: Request) {
     ]);
 
     if (insertError) {
+      console.log("SUPABASE INSERT MESSAGE ERROR:", insertError);
+
       return NextResponse.json({
         success: false,
         error: insertError.message,
@@ -132,9 +182,12 @@ export async function POST(req: Request) {
       to,
     });
   } catch (error: any) {
+    console.log("SEND ERROR FULL:", error);
+
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: error.message || String(error),
+      stack: error.stack || null,
     });
   }
 }

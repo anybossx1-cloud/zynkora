@@ -134,11 +134,10 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
-    console.log("TELNYX RESPONSE:", {
-      ok: response.ok,
-      status: response.status,
-      data,
-    });
+    console.log(
+      "TELNYX RESPONSE FULL:",
+      JSON.stringify(data, null, 2)
+    );
 
     if (!response.ok) {
       return NextResponse.json({
